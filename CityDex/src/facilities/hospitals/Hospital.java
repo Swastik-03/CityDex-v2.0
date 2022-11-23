@@ -10,7 +10,7 @@ public class Hospital extends facilities{
         this.speciality = speciality;
     }
 
-    public String getSpeciality() {
+    public String getSpeciality(String specialty) {
         return speciality;
     }
 

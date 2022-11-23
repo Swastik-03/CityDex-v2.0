@@ -2,6 +2,7 @@ package city;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URISyntaxException;
 import java.sql.SQLException;
 
 public class City {
@@ -30,7 +31,7 @@ public class City {
                 "city='" + city ;
     }
 
-    public static void main() throws IOException, SQLException {
+    public static void main() throws IOException, SQLException, URISyntaxException {
 
         boolean istrue=true;
         do{

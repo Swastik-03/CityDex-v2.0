@@ -1,10 +1,13 @@
 
 package person.user;
 import city.City;
+import com.sun.net.httpserver.Request;
+import requestr.Requester;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URISyntaxException;
 import java.sql.*;
 import java.util.ArrayList;
 
@@ -14,17 +17,17 @@ public class UserRunner {
 
     static ArrayList<User> arr= new ArrayList<>();
     static void displayUsers(){
-        for (User i: arr
-        ) {
+        for (User i: arr) {
 
             System.out.println(i);
 
         }
     }
 
-    static void updateprofile(User i) throws SQLException, IOException {
+    public static void updateprofile(User i) throws SQLException, IOException {
         BufferedReader br =new BufferedReader(new InputStreamReader(System.in));
 
+        //main();
         Connection connection= DriverManager.getConnection("jdbc:mysql://localhost:3306/jdbc","root","Sm.963258741m");
 
         Statement statement=connection.createStatement();
@@ -33,7 +36,7 @@ public class UserRunner {
 
         while (isTrue)
         {
-            System.out.println("Select 1)Update username 2)Update password 3)Update Email 4)Update Name 5)Update City 6)Display userprofile 7)Exit");
+            System.out.println("Select 1)Update username 2)Update password 3)Update Email 4)Update Name 5)Update City 6)Update Contact 7)Display userprofile 8)Exit");
             int selection = Integer.parseInt(br.readLine());
             switch(selection){
                 case 1: {
@@ -102,14 +105,29 @@ public class UserRunner {
                     }
                     break;
                 }
-                case 6:{
+                case 6:
+                {
+                    try
+                    {
+                        System.out.println("Enter your Contact no.");
+                        i.setContact(Long.parseLong(br.readLine()));
+                        String query6 = "UPDATE userprofiles SET Contact =" +  + i.getContact()  + " WHERE Username=" + "\'" + i.getUsername() + "\'" + ";";
+                        statement.executeUpdate(query6);
+                    }
+                    catch (Exception e)
+                    {
+                        System.out.println(e);
+                    }
+                }
+                case 7:{
                     System.out.println("Name-"+i.getName());
                     System.out.println("Username-"+i.getUsername());
                     System.out.println("Email-"+i.getMail());
                     System.out.println("City-"+i.getCity());
                     System.out.println("User ID-"+i.getId());
+                    System.out.println("Contact-"+i.getContact());
                 }
-                case 7: {
+                case 8: {
                     isTrue = false;
                     break;
                 }
@@ -117,13 +135,6 @@ public class UserRunner {
             }
 
         }
-
-
-
-
-
-
-
 
     }
 
@@ -145,40 +156,46 @@ public class UserRunner {
             String pass = br.readLine();
             System.out.println("Enter your City:");
             String city = br.readLine();
-            System.out.println("Enter your mail:");
+            System.out.println("Enter your Contact no:");
+            long contact=Long.parseLong(br.readLine());
+            boolean ffl=true;
+            do{
+                ffl=true;
+                System.out.println("Enter your mail:");
             String mail = br.readLine();
 
-            User u=new User();
+            User u = new User();
             u.setName(name);
             u.setUsername(unmae);
             u.setPassword(pass);
             u.setCity(city);
             u.setMail(mail);
-if(mail.contains("@") && mail.contains(".com")) {
-    String query = "INSERT INTO userprofiles (Name, UserName, Email, Password, City) Values(" + "\'" + name + "\'," + "\'" + unmae + "\'," + "\'" + mail + "\'," + "\'" + pass + "\'," + "\'" + city + "\'" + ");";
+            u.setContact(contact);
+            if (mail.contains("@") && mail.contains(".com")) {
+                String query = "INSERT INTO userprofiles (Name, UserName, Email, Password, City,Contact) Values(" + "\'" + name + "\'," + "\'" + unmae + "\'," + "\'" + mail + "\'," + "\'" + pass + "\'," + "\'" + city + "\'," + u.getContact() +");";
+                ffl=false;
+                statement.executeUpdate(query);
+                System.out.println("You have successfully signed up!!!");
+                System.out.println("Enter 1 to Update your profile (or) 2 Login : ");
+                int crud = Integer.parseInt(br.readLine());
 
-    statement.executeUpdate(query);
-    System.out.println("You have successfully signed up!!!");
-    System.out.println("Enter 1 to Update your profile (or) 2 to search for a city: ");
-    int crud = Integer.parseInt(br.readLine());
+                switch (crud) {
 
-    switch (crud){
+                    case 1: {
+                        System.out.println("You are updating your profile!!");
+                        updateprofile(u);
+                        break;
+                    }
+                    case 2: {
 
-        case 1:{
-            System.out.println("You are updating your profile!!");
-            updateprofile(u);
-            break;
-        }
-        case 2:{
-            City.main();
-            break;
+                        break;
 
-        }
-    }
-}
-else {
-    System.out.println("Enter valid email!!!");
-}
+                    }
+                }
+            } else {
+                System.out.println("Enter valid email!!!");
+            }
+        }while(ffl);
         }
         catch (Exception e){
             System.out.println(e);
@@ -186,7 +203,7 @@ else {
 
 
     }
-    public static void login() throws IOException, SQLException {
+    public static void login() throws IOException, SQLException, URISyntaxException {
         Connection connection= DriverManager.getConnection("jdbc:mysql://localhost:3306/jdbc","root","Sm.963258741m");
 
         Statement statement=connection.createStatement();
@@ -195,44 +212,78 @@ else {
 
         ResultSet resultSet= statement.executeQuery("select * from userprofiles");
         BufferedReader br =new BufferedReader(new InputStreamReader(System.in));
-
+        Requester r=new Requester();
         System.out.println("Enter the Username: ");
-        String uname=br.readLine();
-        System.out.println("Enter the password : ");
-        String admin_password = br.readLine();
 
+        String uname=br.readLine();
+        boolean flag=false;
         for(User i:arr){
             if(i.getUsername().equals(uname)){
-                if(i.getPassword().equals(admin_password)) {
-                    System.out.println("You have logged in successfully!!");
-                    boolean Istrue = true;
-
-                    do {
-                      System.out.println("Enter 1 to Update your profile (or) 2 to search for a city (or) 3.Logout ");
-                      int crud = Integer.parseInt(br.readLine());
-
-                      switch (crud) {
-                          case 1:
-                              System.out.println("You are updating your profile...");
-                              updateprofile(i);
-                              break;
-                          case 2:
-                              City.main();
-                              break;
-                          case 3:
-                              Istrue = false;
-                              break;
-
-                      }
-                  }while (Istrue);
-                }
-                else{
-                    System.out.println("Incorrect password try again");
-                    exit(0);
-                }
+                flag=true;
             }
         }
 
+        if(flag) {
+            System.out.println("Enter the password : ");
+            String admin_password = br.readLine();
+            boolean flaag = true;
+            int kk=1;
+            do {
+                int jr = 1;
+                for (User i : arr) {
+                    boolean Istrue = false;
+
+                    flaag = true;
+                    if (i.getUsername().equals(uname)) {
+                        jr = 1;
+                        if (i.getPassword().equals(admin_password) && kk == 1) {
+                            System.out.println("You have logged in successfully!!");
+                            Istrue = true;
+                            flaag = false;
+                            jr=0;
+
+                            do {
+                                System.out.println("Enter 1.To Update your profile (or) 2.Select a city to use CITYDEX (or) 3.Request for hosting (or) 4.Logout ");
+                                int crud = Integer.parseInt(br.readLine());
+
+                                switch (crud) {
+                                    case 1:
+                                        System.out.println("You are updating your profile...");
+                                        updateprofile(i);
+
+                                        break;
+                                    case 2:
+                                        City.main();
+                                        break;
+                                    case 3:
+                                        r.request(i);
+                                        break;
+                                    case 4:
+                                        System.out.println("Logged out!");
+                                        Istrue = false;
+                                        kk = 0;
+                                        break;
+
+                                }
+                            } while (Istrue);
+                        }
+
+                    }
+
+                }
+
+                if(jr==1){
+                    System.out.println("Incorrect password");
+                    flaag= false;
+                }
+                if (kk == 0) {
+                    flaag = false;
+                }
+            }while (flaag);
+        }
+        else{
+            System.out.println("Enter valid Username");
+        }
 
 
     }
@@ -243,9 +294,7 @@ else {
         Statement statement=connection.createStatement();
 
 
-//        String query1 = "UPDATE people SET name = 'Lord' WHERE name='Alfred Schmidt';";
-//        statement.executeUpdate(query1);
-
+        //arr.clear();
         ResultSet resultSet= statement.executeQuery("select * from userprofiles");
         int i=1;
 
@@ -259,6 +308,8 @@ else {
             u.setPassword(resultSet.getString("Password"));
             u.setUsername(resultSet.getString("Username"));
             u.setMail(resultSet.getString("Email"));
+            u.setContact(resultSet.getLong("Contact"));
+
             i++;
             arr.add(u);
 
